@@ -1,4 +1,9 @@
 public import Buffer
+public import Buffer_Linear_Primitive
+public import Memory
+public import Memory_Allocator
+public import Memory_Allocator_Protocol
+public import Storage
 public import Cardinal
 public import Index
 public import Ownership
@@ -10,7 +15,17 @@ extension Ownership {
     public struct Shared<Element: ~Copyable, B: Store.`Protocol` & Buffer.`Protocol` & ~Copyable>: ~Copyable
     where B.Element == Element {
         public var b: B
-        public init(_ b: consuming B) { self.b = b }
+        @usableFromInline init(b: consuming B) { self.b = b }
+    }
+}
+
+extension Ownership.Shared where Element: ~Copyable, B: ~Copyable {
+    @inlinable
+    public init<Resource: Memory.Growable & SendableMetatype & ~Copyable>(
+        _ buffer: consuming Buffer<Storage<Memory.Allocator<Resource>>.Contiguous<Element>>.Linear
+    )
+    where B == Buffer<Storage<Memory.Allocator<Resource>>.Contiguous<Element>>.Linear {
+        self.init(b: buffer)
     }
 }
 
