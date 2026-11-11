@@ -17,7 +17,7 @@ jobs:
     outputs:
       cases: ${{ steps.list.outputs.cases }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - id: list
@@ -35,7 +35,7 @@ jobs:
         case: ${{ fromJSON(needs.plan.outputs.cases) }}
         image: ["swift:6.4.2-noble"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Toolchain
