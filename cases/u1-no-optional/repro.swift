@@ -17,9 +17,7 @@ struct Col<E>: P, Q, R {
     var r: E { fatalError() }
 }
 
-func read<S: Q>(_ s: S) -> S.Element? { nil }
-
 func probe(_ c: Col<Int>) {
-    let x = read(Shared(c))
+    let x: Shared<Int, Col<Int>>.Element = 0
     _ = x
 }
