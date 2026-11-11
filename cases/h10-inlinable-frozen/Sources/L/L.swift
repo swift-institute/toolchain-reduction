@@ -17,6 +17,7 @@ extension Ownership {
         @usableFromInline init(_ value: consuming B) { self.value = value }
     }
 
+    @frozen
     public struct Shared<Element: ~Copyable, B: Store.`Protocol` & Buffer.`Protocol` & ~Copyable>: ~Copyable
     where B.Element == Element {
         @usableFromInline var box: Ownership.SharedBox<B>
@@ -25,8 +26,6 @@ extension Ownership {
 }
 
 extension Ownership.Shared: Copyable where Element: Copyable, B: ~Copyable {}
-
-extension Ownership.Shared: @unchecked Sendable where Element: ~Copyable, B: Sendable & ~Copyable {}
 
 extension Ownership.Shared where Element: ~Copyable, B: ~Copyable {
     @inlinable
@@ -49,24 +48,32 @@ extension Ownership.Shared where Element: Copyable, B: ~Copyable {
 }
 
 extension Ownership.Shared: Store.`Protocol` where Element: ~Copyable, B: ~Copyable {
+    @inlinable
     public var capacity: Tagged<Element, Cardinal> { box.value.capacity }
+    @inlinable
     public subscript(slot: Index<Element>) -> Element {
         _read { yield box.value[slot] }
         _modify { yield &box.value[slot] }
     }
+    @inlinable
     public mutating func initialize(at slot: Index<Element>, to element: consuming Element) {
         box.value.initialize(at: slot, to: element)
     }
+    @inlinable
     public mutating func move(at slot: Index<Element>) -> Element { box.value.move(at: slot) }
+    @inlinable
     public mutating func swapAt(_ i: Index<Element>, _ j: Index<Element>) { box.value.swapAt(i, j) }
+    @inlinable
     public mutating func unshare() {}
 }
 
 extension Ownership.Shared: Buffer.`Protocol` where Element: ~Copyable, B: ~Copyable {
+    @inlinable
     public var count: Tagged<Element, Cardinal> { box.value.count }
 }
 
 extension Ownership.Shared: Span.`Protocol` where B: Span.`Protocol`, B: ~Copyable {
+    @inlinable
     public var span: Swift::Span<Element> {
         @_lifetime(borrow self)
         borrowing get { fatalError() }
