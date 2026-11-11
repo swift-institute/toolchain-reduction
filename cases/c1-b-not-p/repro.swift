@@ -1,17 +1,10 @@
-protocol P { associatedtype Element }
+protocol P { }
 protocol Q { associatedtype Element }
 protocol R { associatedtype Element }
-
 extension Shared: R where B: R {}
-
-struct Shared<Element, B> {}
-
-extension Shared: P {}
+struct Shared<Element, B: Q> {}
 extension Shared: Q {}
-
 struct Col<Element>: P, Q, R {}
-
 func probe() {
     let x: Shared<Int, Col<Int>>.Element = 0
-    _ = x
 }

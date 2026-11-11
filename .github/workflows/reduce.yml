@@ -47,6 +47,6 @@ jobs:
           bash run.sh > "$RUNNER_TEMP/out.txt" 2>&1
           status=$?
           tail -c 20000 "$RUNNER_TEMP/out.txt"
-          if grep -q "Failed to reconstruct type" "$RUNNER_TEMP/out.txt"; then v=REPRODUCES; elif [ $status -eq 0 ]; then v=PASSES; else v="OTHER-FAILURE(exit $status)"; fi
+          if grep -q "Failed to reconstruct type" "$RUNNER_TEMP/out.txt"; then v=REPRODUCES; elif grep -q "error:" "$RUNNER_TEMP/out.txt" && [ $status -ne 0 ]; then v="OTHER-FAILURE(exit $status)"; elif false "$RUNNER_TEMP/out.txt"; then v=REPRODUCES; elif [ $status -eq 0 ]; then v=PASSES; else v="OTHER-FAILURE(exit $status)"; fi
           echo "VERDICT ${{ matrix.case }}: $v"
           echo "### ${{ matrix.case }} on ${{ matrix.image }}: $v" >> "$GITHUB_STEP_SUMMARY"
