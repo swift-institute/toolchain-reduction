@@ -31,6 +31,7 @@ jobs:
       - name: Cases
         shell: bash
         run: |
+          set +e
           for dir in cases/*/; do
             name=$(basename "$dir")
             out="$RUNNER_TEMP/$name.txt"
