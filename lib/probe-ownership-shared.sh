@@ -13,6 +13,7 @@ for f in "$@"; do
         *) rm -v "Sources/Ownership Shared Primitive/$f" ;;
     esac
 done
+sed -i "/treatAllWarnings/d" Package.swift
 mkdir -p Sources/Probe && cp "$here/../../lib/${PROBE:-probe-p8}.swift" Sources/Probe/Probe.swift
 cat >> Package.swift <<'MANIFEST'
 
