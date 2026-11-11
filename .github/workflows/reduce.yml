@@ -1,52 +1,45 @@
-# Runs each cases/<name>/run.sh on a GitHub-hosted Linux runner, one job per case,
-# so a toolchain bug can be reduced without building on a developer machine.
-# A case prints its own verdict; the job always succeeds so every case reports.
+# Runs every cases/<name>/run.sh on GitHub-hosted Linux, one job per toolchain
+# image, all cases in sequence inside it, so a round costs two runners.
+# Each case prints a verdict; the job always succeeds so every case reports.
 name: reduce
 
 on:
   push:
     branches: [main]
+    paths: [cases/**, .github/workflows/reduce.yml]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  plan:
-    runs-on: ubuntu-latest
-    outputs:
-      cases: ${{ steps.list.outputs.cases }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - id: list
-        run: echo "cases=$(ls cases | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
-
-  case:
-    needs: plan
-    name: ${{ matrix.case }} · ${{ matrix.image }}
+  cases:
+    name: cases · ${{ matrix.image }}
     runs-on: ubuntu-latest
     container: ${{ matrix.image }}
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        case: ${{ fromJSON(needs.plan.outputs.cases) }}
         image: ["swift:6.4.2-noble", "swiftlang/swift:nightly-main-noble"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Toolchain
-        run: swiftc -frontend -version 2>&1 || swiftc --version
-      - name: Run
-        working-directory: cases/${{ matrix.case }}
+        run: swiftc --version
+      - name: Cases
+        shell: bash
         run: |
-          set +e
-          bash run.sh > "$RUNNER_TEMP/out.txt" 2>&1
-          status=$?
-          tail -c 20000 "$RUNNER_TEMP/out.txt"
-          if grep -q "Failed to reconstruct type" "$RUNNER_TEMP/out.txt"; then v=REPRODUCES; elif grep -q "error:" "$RUNNER_TEMP/out.txt" && [ $status -ne 0 ]; then v="OTHER-FAILURE(exit $status)"; elif false "$RUNNER_TEMP/out.txt"; then v=REPRODUCES; elif [ $status -eq 0 ]; then v=PASSES; else v="OTHER-FAILURE(exit $status)"; fi
-          echo "VERDICT ${{ matrix.case }}: $v"
-          echo "### ${{ matrix.case }} on ${{ matrix.image }}: $v" >> "$GITHUB_STEP_SUMMARY"
+          for dir in cases/*/; do
+            name=$(basename "$dir")
+            out="$RUNNER_TEMP/$name.txt"
+            (cd "$dir" && bash run.sh > "$out" 2>&1)
+            status=$?
+            if grep -q "Failed to reconstruct type" "$out"; then v=REPRODUCES
+            elif [ $status -eq 0 ]; then v=PASSES
+            else v="OTHER-FAILURE(exit $status)"; fi
+            echo "VERDICT $name: $v"
+            echo "### $name on ${{ matrix.image }}: $v" >> "$GITHUB_STEP_SUMMARY"
+            echo "::group::$name output"; tail -c 6000 "$out"; echo "::endgroup::"
+          done
