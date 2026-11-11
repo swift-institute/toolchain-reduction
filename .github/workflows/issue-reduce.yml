@@ -1,0 +1,59 @@
+# Runs swift-institute/Issues' issue-reduce on reduce/repro.swift with a swiftly
+# toolchain on a GitHub-hosted macOS runner: the signature first, then the
+# reduction to a fixed point. The install steps follow that repository's
+# toolchain-matrix workflow.
+name: issue-reduce
+
+on:
+  push:
+    branches: [main]
+    paths: [reduce/**, .github/workflows/issue-reduce.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TOOLCHAIN: main-snapshot-2026-11-01
+
+jobs:
+  reduce:
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: swift-institute/Issues
+          path: issues
+          persist-credentials: false
+      - name: Record the runner
+        run: |
+          echo "Runner image: $ImageOS $ImageVersion"
+          xcodebuild -version
+          git -C issues rev-parse HEAD
+      - name: Install swiftly and the toolchain
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/swiftly.pkg" https://download.swift.org/swiftly/darwin/swiftly.pkg
+          pkgutil --check-signature "$RUNNER_TEMP/swiftly.pkg" | grep -q "signed by a developer certificate issued by Apple"
+          installer -pkg "$RUNNER_TEMP/swiftly.pkg" -target CurrentUserHomeDirectory
+          "$HOME/.swiftly/bin/swiftly" init --assume-yes --skip-install --quiet-shell-followup
+          echo "$HOME/.swiftly/bin" >> "$GITHUB_PATH"
+          "$HOME/.swiftly/bin/swiftly" install "$TOOLCHAIN" --assume-yes
+      - name: Build issue-reduce
+        run: swift build -c release --package-path issues/Tooling --product issue-reduce
+      - name: Signature
+        run: |
+          mkdir -p work && cp reduce/repro.swift work/repro.swift && cd work
+          swiftly run swiftc --version "+$TOOLCHAIN"
+          ../issues/Tooling/.build/release/issue-reduce repro.swift --signature -- swiftly run swiftc -g -c {} -o /dev/null "+$TOOLCHAIN"
+      - name: Reduce
+        run: |
+          cd work
+          ../issues/Tooling/.build/release/issue-reduce repro.swift -o reduced.swift -- swiftly run swiftc -g -c {} -o /dev/null "+$TOOLCHAIN"
+          echo "----- reduced.swift"
+          cat reduced.swift
+          echo "----- output of the reduced file"
+          cat reduced.swift.log
