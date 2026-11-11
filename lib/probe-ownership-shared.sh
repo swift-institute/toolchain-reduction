@@ -8,6 +8,7 @@ git clone -q https://github.com/swift-molecules/swift-ownership-shared src
 cd src && git checkout -q 23776f72ab20ec9a82f2a28e32fbd70cae475f57
 for f in "$@"; do
     case "$f" in
+        py=*) python3 -I "$here/../../lib/edits/${f#py=}.py" "Sources/Ownership Shared Primitive" ;;
         span=*) cp -v "$here/../../lib/span-variants/${f#span=}.swift" "Sources/Ownership Shared Primitive/Ownership.Shared+Span.Protocol.swift" ;;
         *) rm -v "Sources/Ownership Shared Primitive/$f" ;;
     esac
