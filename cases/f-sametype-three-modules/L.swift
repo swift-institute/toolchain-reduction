@@ -14,7 +14,9 @@ public struct Shared<Element: ~Copyable, B: P & Q & ~Copyable>: ~Copyable where 
     @usableFromInline var b: B
 }
 extension Shared: P where Element: ~Copyable, B: ~Copyable {
-    public subscript(i: Int) -> Element { b[i] }
+    public subscript(i: Int) -> Element {
+        _read { yield b[i] }
+    }
 }
 extension Shared: Q where Element: ~Copyable, B: ~Copyable {
     public var count: Int { b.count }
