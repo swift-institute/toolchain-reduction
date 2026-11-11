@@ -4,13 +4,13 @@ public protocol P: ~Copyable {
     associatedtype Element: ~Copyable
     var capacity: Tag<Element, Int> { get }
 }
-public protocol Q: ~Copyable {
+public protocol Q: ~Copyable, ~Escapable {
     associatedtype Element: ~Copyable
     var count: Tag<Element, Int> { get }
 }
 public protocol R: ~Copyable, ~Escapable {
     associatedtype Element: ~Copyable
-    var span: Tag<Element, Int> { get }
+    var span: Swift.Span<Element> { @_lifetime(borrow self) get }
 }
 extension Ownership {
     public struct Shared<Element: ~Copyable, B: P & Q & ~Copyable>: ~Copyable where B.Element == Element {
@@ -24,12 +24,21 @@ extension Ownership.Shared: P where Element: ~Copyable, B: ~Copyable {
 extension Ownership.Shared: Q where Element: ~Copyable, B: ~Copyable {
     public var count: Tag<Element, Int> { Tag() }
 }
+extension Ownership.Shared where Element: ~Copyable, B: ~Copyable {
+    package static func window(of column: borrowing B) -> Int where B: R, B.Element == Element { 0 }
+}
 extension Ownership.Shared: R where B: R, B: ~Copyable {
-    public var span: Tag<Element, Int> { Tag() }
+    public var span: Swift.Span<Element> {
+        @_lifetime(borrow self)
+        borrowing get { fatalError() }
+    }
 }
 public struct Col<Element: ~Copyable>: ~Copyable, P, Q, R {
     public init() {}
-    public var span: Tag<Element, Int> { Tag() }
+    public var span: Swift.Span<Element> {
+        @_lifetime(borrow self)
+        borrowing get { fatalError() }
+    }
     public var capacity: Tag<Element, Int> { Tag() }
     public var count: Tag<Element, Int> { Tag() }
 }

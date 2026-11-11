@@ -1,3 +1,4 @@
+public enum Ownership {}
 public struct Tag<T: ~Copyable, U> { public init() {} }
 public protocol P: ~Copyable {
     associatedtype Element: ~Copyable
@@ -11,17 +12,22 @@ public protocol R: ~Copyable, ~Escapable {
     associatedtype Element: ~Copyable
     var span: Tag<Element, Int> { get }
 }
-public struct Shared<Element: ~Copyable, B: P & Q & ~Copyable>: ~Copyable where B.Element == Element {
-    public var b: B
-    public init(_ b: consuming B) { self.b = b }
+extension Ownership {
+    public struct Shared<Element: ~Copyable, B: P & Q & ~Copyable>: ~Copyable where B.Element == Element {
+        public var b: B
+        public init(_ b: consuming B) { self.b = b }
+    }
 }
-extension Shared: P where Element: ~Copyable, B: ~Copyable {
+extension Ownership.Shared: P where Element: ~Copyable, B: ~Copyable {
     public var capacity: Tag<Element, Int> { Tag() }
 }
-extension Shared: Q where Element: ~Copyable, B: ~Copyable {
+extension Ownership.Shared: Q where Element: ~Copyable, B: ~Copyable {
     public var count: Tag<Element, Int> { Tag() }
 }
-extension Shared: R where B: R, B: ~Copyable {
+extension Ownership.Shared where Element: ~Copyable, B: ~Copyable {
+    package static func window(of column: borrowing B) -> Int where B: R, B.Element == Element { 0 }
+}
+extension Ownership.Shared: R where B: R, B: ~Copyable {
     public var span: Tag<Element, Int> { Tag() }
 }
 public struct Col<Element: ~Copyable>: ~Copyable, P, Q, R {
@@ -32,7 +38,7 @@ public struct Col<Element: ~Copyable>: ~Copyable, P, Q, R {
 }
 func read<S: Q & ~Copyable>(_ s: borrowing S) -> S.Element? { nil }
 public func probe() {
-    let s = Shared(Col<Int>())
+    let s = Ownership.Shared(Col<Int>())
     let x = read(s)
     _ = x
 }

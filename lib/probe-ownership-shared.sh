@@ -6,7 +6,12 @@ set -e
 here="$(pwd)"
 git clone -q https://github.com/swift-molecules/swift-ownership-shared src
 cd src && git checkout -q 23776f72ab20ec9a82f2a28e32fbd70cae475f57
-for f in "$@"; do rm -v "Sources/Ownership Shared Primitive/$f"; done
+for f in "$@"; do
+    case "$f" in
+        span=*) cp -v "$here/../../lib/span-variants/${f#span=}.swift" "Sources/Ownership Shared Primitive/Ownership.Shared+Span.Protocol.swift" ;;
+        *) rm -v "Sources/Ownership Shared Primitive/$f" ;;
+    esac
+done
 mkdir -p Sources/Probe && cp "$here/../../lib/probe-p8.swift" Sources/Probe/Probe.swift
 cat >> Package.swift <<'MANIFEST'
 
