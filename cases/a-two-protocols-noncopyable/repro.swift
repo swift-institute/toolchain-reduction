@@ -15,7 +15,9 @@ extension Shared: Q where Element: ~Copyable, B: ~Copyable {
 }
 public struct C<S: ~Copyable>: ~Copyable { var s: S }
 extension C where S: P & Q & ~Copyable {
-    public subscript(i: Int) -> S.Element { s[i] }
+    public subscript(i: Int) -> S.Element {
+        _read { yield s[i] }
+    }
 }
 public func f(_ c: borrowing C<Shared<Int, Int>>) {
     let x = c[0]
