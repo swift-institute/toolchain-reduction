@@ -12,6 +12,14 @@ public protocol R: ~Copyable, ~Escapable {
     associatedtype Element: ~Copyable
     var span: Swift.Span<Element> { @_lifetime(borrow self) get }
 }
+extension Swift.Span {
+    public typealias `Protocol` = R
+}
+extension Swift.Span: R {
+    public var span: Swift.Span<Element> {
+        @_lifetime(borrow self) get { self }
+    }
+}
 extension Ownership {
     public struct Shared<Element: ~Copyable, B: P & Q & ~Copyable>: ~Copyable where B.Element == Element {
         public var b: B
@@ -24,16 +32,13 @@ extension Ownership.Shared: P where Element: ~Copyable, B: ~Copyable {
 extension Ownership.Shared: Q where Element: ~Copyable, B: ~Copyable {
     public var count: Tag<Element, Int> { Tag() }
 }
-extension Ownership.Shared where Element: ~Copyable, B: ~Copyable {
-    package static func window(of column: borrowing B) -> Int where B: R, B.Element == Element { 0 }
-}
-extension Ownership.Shared: R where B: R, B: ~Copyable {
+extension Ownership.Shared: Swift.Span.`Protocol` where B: Swift.Span.`Protocol`, B: ~Copyable {
     public var span: Swift.Span<Element> {
         @_lifetime(borrow self)
         borrowing get { fatalError() }
     }
 }
-public struct Col<Element: ~Copyable>: ~Copyable, P, Q, R {
+public struct Col<Element: ~Copyable>: ~Copyable, P, Q, Swift.Span.`Protocol` {
     public init() {}
     public var span: Swift.Span<Element> {
         @_lifetime(borrow self)
