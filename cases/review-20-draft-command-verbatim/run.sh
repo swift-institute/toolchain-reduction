@@ -1,0 +1,1 @@
+swiftc -g repro.swift

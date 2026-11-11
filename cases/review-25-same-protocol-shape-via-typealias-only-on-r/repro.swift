@@ -1,6 +1,6 @@
 protocol Q { associatedtype Element }
 protocol R { associatedtype Element }
-struct S<Element, B> {}
-extension S: R where B == Int {}
+struct S<Element> {}
+extension S: R where Element: Any {}
 extension S: Q {}
-let x: S<Int, Int>.Element = 0
+let x: S<Int>.Element = 0
