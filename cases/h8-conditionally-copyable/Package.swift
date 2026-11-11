@@ -1,7 +1,7 @@
 // swift-tools-version: 6.4
 import PackageDescription
 let package = Package(
-    name: "h6",
+    name: "h8",
     dependencies: [
         .package(url: "https://github.com/swift-atoms/swift-store.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-buffer.git", branch: "main"),
