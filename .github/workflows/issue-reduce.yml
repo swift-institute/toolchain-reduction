@@ -48,11 +48,11 @@ jobs:
         run: |
           mkdir -p work && cp reduce/repro.swift work/repro.swift && cd work
           swiftly run swiftc --version "+$TOOLCHAIN"
-          ../issues/Tooling/.build/release/issue-reduce repro.swift --signature -- swiftly run swiftc -g -c {} -o /dev/null "+$TOOLCHAIN"
+          ../issues/Tooling/.build/release/issue-reduce repro.swift --signature -- swiftly run swiftc -g {} "+$TOOLCHAIN"
       - name: Reduce
         run: |
           cd work
-          ../issues/Tooling/.build/release/issue-reduce repro.swift -o reduced.swift -- swiftly run swiftc -g -c {} -o /dev/null "+$TOOLCHAIN"
+          ../issues/Tooling/.build/release/issue-reduce repro.swift -o reduced.swift -- swiftly run swiftc -g {} "+$TOOLCHAIN"
           echo "----- reduced.swift"
           cat reduced.swift
           echo "----- output of the reduced file"
