@@ -12,7 +12,7 @@ for f in "$@"; do
         *) rm -v "Sources/Ownership Shared Primitive/$f" ;;
     esac
 done
-mkdir -p Sources/Probe && cp "$here/../../lib/probe-p8.swift" Sources/Probe/Probe.swift
+mkdir -p Sources/Probe && cp "$here/../../lib/${PROBE:-probe-p8}.swift" Sources/Probe/Probe.swift
 cat >> Package.swift <<'MANIFEST'
 
 package.targets.append(
@@ -28,7 +28,11 @@ package.targets.append(
             .product(name: "Index", package: "swift-index"),
             .product(name: "Tagged", package: "swift-tagged"),
             .product(name: "Ownership", package: "swift-ownership"),
-        ]
+            .product(name: "Span", package: "swift-span"),
+            .product(name: "Store", package: "swift-store"),
+            .product(name: "Cardinal", package: "swift-cardinal"),
+        ],
+        swiftSettings: [.enableExperimentalFeature("Lifetimes")]
     )
 )
 MANIFEST

@@ -1,7 +1,7 @@
 // swift-tools-version: 6.4
 import PackageDescription
 let package = Package(
-    name: "h2",
+    name: "h4",
     dependencies: [
         .package(url: "https://github.com/swift-atoms/swift-store.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-buffer.git", branch: "main"),
@@ -10,6 +10,10 @@ let package = Package(
         .package(url: "https://github.com/swift-atoms/swift-cardinal.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-ownership.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-span.git", branch: "main"),
+        .package(url: "https://github.com/swift-molecules/swift-buffer-linear.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-storage.git", branch: "main", traits: ["Memory"]),
+        .package(url: "https://github.com/swift-atoms/swift-memory.git", branch: "main"),
+        .package(url: "https://github.com/swift-molecules/swift-memory-allocation.git", branch: "main"),
     ],
     targets: [
         .target(name: "L", dependencies: [
@@ -24,6 +28,12 @@ let package = Package(
         .target(name: "T", dependencies: [
             "L",
             .product(name: "Buffer", package: "swift-buffer"),
+            .product(name: "Buffer Linear Primitive", package: "swift-buffer-linear"),
+            .product(name: "Storage", package: "swift-storage"),
+            .product(name: "Memory", package: "swift-memory"),
+            .product(name: "Memory Allocator", package: "swift-memory-allocation"),
+            .product(name: "Index", package: "swift-index"),
+            .product(name: "Tagged", package: "swift-tagged"),
             .product(name: "Ownership", package: "swift-ownership"),
         ]),
     ],
