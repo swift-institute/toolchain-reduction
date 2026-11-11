@@ -1,0 +1,39 @@
+// swift-tools-version: 6.4
+import PackageDescription
+let package = Package(
+    name: "h12",
+    dependencies: [
+        .package(url: "https://github.com/swift-atoms/swift-store.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-buffer.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-index.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-tagged.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-cardinal.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-ownership.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-span.git", branch: "main"),
+    ],
+    targets: [
+        .target(name: "Ownership Shared Primitive", dependencies: [
+            .product(name: "Store", package: "swift-store"),
+            .product(name: "Buffer", package: "swift-buffer"),
+            .product(name: "Index", package: "swift-index"),
+            .product(name: "Tagged", package: "swift-tagged"),
+            .product(name: "Cardinal", package: "swift-cardinal"),
+            .product(name: "Ownership", package: "swift-ownership"),
+            .product(name: "Span", package: "swift-span"),
+        ]),
+        .target(name: "Probe", dependencies: [
+            "Ownership Shared Primitive",
+            .product(name: "Store", package: "swift-store"),
+            .product(name: "Buffer", package: "swift-buffer"),
+            .product(name: "Index", package: "swift-index"),
+            .product(name: "Tagged", package: "swift-tagged"),
+            .product(name: "Cardinal", package: "swift-cardinal"),
+            .product(name: "Ownership", package: "swift-ownership"),
+            .product(name: "Span", package: "swift-span"),
+        ]),
+    ],
+    swiftLanguageModes: [.v6]
+)
+for target in package.targets {
+    target.swiftSettings = [.strictMemorySafety(), .enableExperimentalFeature("Lifetimes")]
+}
